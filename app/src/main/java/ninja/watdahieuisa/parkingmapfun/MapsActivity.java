@@ -1,9 +1,6 @@
 package ninja.watdahieuisa.parkingmapfun;
 
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
@@ -41,13 +38,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        //mMap = googleMap;
-        setUpMap();
+        mMap = googleMap;
+    //    setUpMap();
         // Add a marker in Sydney and move the camera
 //        LatLng sydney = new LatLng(-34, 151);
 //        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        //mMap.clear();
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng point) {
+
+                MarkerOptions marker = new MarkerOptions().position(
+                        new LatLng(point.latitude,point.longitude)).title("New Marker");
+                mMap.addMarker(marker);
+            }
+        });
     }
+
+
     private void showCurrentLocation(Location location){
         mMap.clear();
 
@@ -62,41 +72,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 18));
     }
 
-    private void setUpMap(){
-        LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-
-        String provider = locationManager.getBestProvider(criteria, true);
-
-        LocationListener locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                showCurrentLocation(location);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        };
-        locationManager.requestLocationUpdates(provider,2000,0,locationListener);
-
-        Location location = locationManager.getLastKnownLocation(provider);
-
-        if(location != null)
-        {
-            showCurrentLocation(location);
-        }
-    }
+//    private void setUpMap(){
+//        LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+//        Criteria criteria = new Criteria();
+//        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+//
+//        String provider = locationManager.getBestProvider(criteria, true);
+//
+//        LocationListener locationListener = new LocationListener() {
+//            @Override
+//            public void onLocationChanged(Location location) {
+//                showCurrentLocation(location);
+//            }
+//
+//            @Override
+//            public void onStatusChanged(String provider, int status, Bundle extras) {
+//
+//            }
+//
+//            @Override
+//            public void onProviderEnabled(String provider) {
+//
+//            }
+//
+//            @Override
+//            public void onProviderDisabled(String provider) {
+//
+//            }
+//        };
+//        locationManager.requestLocationUpdates(provider,2000,0,locationListener);
+//
+//        Location location = locationManager.getLastKnownLocation(provider);
+//
+//        if(location != null)
+//        {
+//            showCurrentLocation(location);
+//        }
+//    }
 }
