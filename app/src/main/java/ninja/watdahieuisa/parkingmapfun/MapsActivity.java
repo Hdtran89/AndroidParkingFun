@@ -1,102 +1,87 @@
 package ninja.watdahieuisa.parkingmapfun;
 
-import android.location.Location;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.util.ArrayList;
+
+public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap;
+    private ArrayList<LatLng> pointsList = new ArrayList<LatLng>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-    }
-    
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-    //    setUpMap();
-        // Add a marker in Sydney and move the camera
-//        LatLng sydney = new LatLng(-34, 151);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        //mMap.clear();
 
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng point) {
+        //Getting Google Play availability status
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getBaseContext());
 
-                MarkerOptions marker = new MarkerOptions().position(
-                        new LatLng(point.latitude,point.longitude)).title("New Marker");
-                mMap.addMarker(marker);
+        //Showing Status
+        if(status != ConnectionResult.SUCCESS){
+            int requestCode = 10;
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status,this, requestCode);
+            dialog.show();
+        }
+        else {
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+
+            mMap = mapFragment.getMap();
+
+            mMap.setMyLocationEnabled(true);
+
+            mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                @Override
+                public void onMapClick(LatLng point) {
+                    drawMarker(point);
+                    pointsList.add(point);
+
+                    Toast.makeText(getBaseContext(), "Marker is added to the map", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        if(savedInstanceState != null)
+        {
+            if(savedInstanceState.containsKey("points")){
+                pointsList = savedInstanceState.getParcelableArrayList("points");
+                if(pointsList != null)
+                {
+                    for(int i=0;i<pointsList.size(); i++)
+                    {
+                        drawMarker(pointsList.get(i));
+                    }
+                }
             }
-        });
+        }
     }
 
-
-    private void showCurrentLocation(Location location){
-        mMap.clear();
-
-        LatLng currentPosition = new LatLng(location.getLatitude(),location.getLongitude());
-
-        mMap.addMarker(new MarkerOptions()
-                .position(currentPosition)
-                .snippet("Lat: " + location.getLatitude() + ", Lng: " + location.getLongitude())
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                .flat(true)
-                .title("Open"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 18));
+    private void drawMarker(LatLng point) {
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(point);
+        markerOptions.title("Lat: " + point.latitude + "," + "Lng: " + point.longitude);
+        mMap.addMarker(markerOptions);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
     }
 
-//    private void setUpMap(){
-//        LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-//        Criteria criteria = new Criteria();
-//        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-//
-//        String provider = locationManager.getBestProvider(criteria, true);
-//
-//        LocationListener locationListener = new LocationListener() {
-//            @Override
-//            public void onLocationChanged(Location location) {
-//                showCurrentLocation(location);
-//            }
-//
-//            @Override
-//            public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//            }
-//
-//            @Override
-//            public void onProviderEnabled(String provider) {
-//
-//            }
-//
-//            @Override
-//            public void onProviderDisabled(String provider) {
-//
-//            }
-//        };
-//        locationManager.requestLocationUpdates(provider,2000,0,locationListener);
-//
-//        Location location = locationManager.getLastKnownLocation(provider);
-//
-//        if(location != null)
-//        {
-//            showCurrentLocation(location);
-//        }
-//    }
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        outState.putParcelableArrayList("points",pointsList);
+
+        super.onSaveInstanceState(outState);
+    }
+
 }
