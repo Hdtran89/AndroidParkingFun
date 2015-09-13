@@ -50,8 +50,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
 
             mMap = mapFragment.getMap();
 
-            mMap.setMyLocationEnabled(true);
-            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            //mMap.setMyLocationEnabled(true);
+            //mMap.getUiSettings().setMyLocationButtonEnabled(false);
             mMap.getUiSettings().setCompassEnabled(true);
             mMap.getUiSettings().setZoomControlsEnabled(true);
 
@@ -173,9 +173,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
 
-        Location currentLocation = 
-        //double latitude = location.getLatitude();
-        //double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+
+
         if (location != null)
         {
             if (mPositionMarker == null) {
@@ -185,11 +186,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener {
                         .flat(true)
                         .anchor(0.5f, 0.5f));
             }
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(latitude, longitude)));
-        // animateMarker(mPositionMarker,location);
-        }
-        else {
-            mPositionMarker.setPosition();
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latitude,longitude)));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         }
     }
 
